@@ -1,0 +1,4 @@
+- source: prereg.qmd
+  quarto-pub:
+    - id: 612a249e-ae22-4028-8776-f4a724de7813
+      url: 'https://quartopub.com/sites/anneokk/psychology-students-use-of-chatgpt'
