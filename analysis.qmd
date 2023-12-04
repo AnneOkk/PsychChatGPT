@@ -1,0 +1,73 @@
+---
+title: "AI-Enabled Clinical Decision Support Tools for Mental Healthcare: A Product Review"
+author: "Anne-Kathrin Kleine, Eesha Kokje, Pia Hummelsberger, Eva Lermer, & Susanne Gaube"
+bibliography: "../../config/Products.bib"
+keywords: "artificial intelligence, mental healthcare"
+csl: "../../config/apa.csl"
+execute:
+  echo: false
+  warning: false
+  message: false
+  cache: true
+  include: true
+prefer-html: true
+format: 
+  docx:
+    reference-doc: "../../config/template_word.docx"
+  html:
+    toc: true
+    toc-depth: 3
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+mydata <- load_excel_files("data/raw") %>% 
+  purrr::map(., ~create_id_column(.x)) %>% # creating the ID columns 
+  combineT1s(.) %>% # combine the two T1 data frames
+  purrr::map(., remove_cols) %>% # remove columns that are not relevant
+  purrr::map(., replace_column_namesTool) %>% # replace "Tool" in df7 and df8 with "toolused" as in the other dfs
+  purrr::map(., to_lower_case) %>%  # make all column names lower case
+  purrr::map(., transform_notoolused) %>% # transform text "not applicable" in tool column to NA
+  purrr::map(., replace_ID_NA) %>% # replace ID with SONAID if ID is NA
+  purrr::map(., remove_na_rows) %>% # remove rows that contain only NA
+  purrr::map(., separate_entries_toolused) %>% # create new columns for each tool mentioned 
+  purrr::map(., remove_white_spaces) %>% # remove white space
+  purrr::map(., transform_entries_toolused) # transform names of AI tools
+
+mydata[[8]] <- replace_column_namest7t8(mydata[[8]]) # replace t7 with t8 in t8 df 
+
+df_wide <- join_dfs_by_id(mydata) %>% 
+  fill_na_duplicates(.)
+
+
+df_wide[duplicated(df_wide$id) | duplicated(df_wide$id, fromLast = TRUE),]
+```
+
+```{r}
+#| eval: false
+
+# Output AI Tools
+df <- data.frame(AITool = unique(get_unique_values(mydata)))
+
+# Write the data frame to a CSV file 
+write.csv(df, "docs/AItools.csv", row.names = FALSE)
+```
+
+
+
+
+# Abstract
+
+# Introduction
+
+# Methods
+
+# Results
+
+
+# References
+
+::: {#refs custom-style="Bibliography"}
+:::

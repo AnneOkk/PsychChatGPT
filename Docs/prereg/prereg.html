@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Psychology students’ use of ChatGPT</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="prereg_files/libs/clipboard/clipboard.min.js"></script>
+<script src="prereg_files/libs/quarto-html/quarto.js"></script>
+<script src="prereg_files/libs/quarto-html/popper.min.js"></script>
+<script src="prereg_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="prereg_files/libs/quarto-html/anchor.min.js"></script>
+<link href="prereg_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="prereg_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="prereg_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="prereg_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="prereg_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#metadata" id="toc-metadata" class="nav-link active" data-scroll-target="#metadata">Metadata</a>
+  <ul class="collapse">
+  <li><a href="#title" id="toc-title" class="nav-link" data-scroll-target="#title">Title:</a></li>
+  <li><a href="#description" id="toc-description" class="nav-link" data-scroll-target="#description">Description:</a></li>
+  </ul></li>
+  <li><a href="#study-information" id="toc-study-information" class="nav-link" data-scroll-target="#study-information">Study information</a>
+  <ul class="collapse">
+  <li><a href="#hypotheses" id="toc-hypotheses" class="nav-link" data-scroll-target="#hypotheses">Hypotheses:</a></li>
+  </ul></li>
+  <li><a href="#design-plan" id="toc-design-plan" class="nav-link" data-scroll-target="#design-plan">Design Plan</a>
+  <ul class="collapse">
+  <li><a href="#study-design" id="toc-study-design" class="nav-link" data-scroll-target="#study-design">Study design:</a></li>
+  <li><a href="#randomization" id="toc-randomization" class="nav-link" data-scroll-target="#randomization">Randomization:</a></li>
+  </ul></li>
+  <li><a href="#sampling-plan" id="toc-sampling-plan" class="nav-link" data-scroll-target="#sampling-plan">Sampling plan</a>
+  <ul class="collapse">
+  <li><a href="#existing-data" id="toc-existing-data" class="nav-link" data-scroll-target="#existing-data">Existing data:</a></li>
+  <li><a href="#explanation-of-existing-data" id="toc-explanation-of-existing-data" class="nav-link" data-scroll-target="#explanation-of-existing-data">Explanation of existing data:</a></li>
+  <li><a href="#data-collection-procedures" id="toc-data-collection-procedures" class="nav-link" data-scroll-target="#data-collection-procedures">Data collection procedures:</a></li>
+  <li><a href="#sample-size" id="toc-sample-size" class="nav-link" data-scroll-target="#sample-size">Sample size:</a></li>
+  <li><a href="#sample-size-rationale" id="toc-sample-size-rationale" class="nav-link" data-scroll-target="#sample-size-rationale">Sample size rationale:</a>
+  <ul class="collapse">
+  <li><a href="#power-analysis" id="toc-power-analysis" class="nav-link" data-scroll-target="#power-analysis">Power analysis</a></li>
+  </ul></li>
+  <li><a href="#stopping-rule" id="toc-stopping-rule" class="nav-link" data-scroll-target="#stopping-rule">Stopping rule:</a></li>
+  </ul></li>
+  <li><a href="#variables" id="toc-variables" class="nav-link" data-scroll-target="#variables">Variables</a>
+  <ul class="collapse">
+  <li><a href="#manipulated-variables" id="toc-manipulated-variables" class="nav-link" data-scroll-target="#manipulated-variables">Manipulated variables:</a></li>
+  <li><a href="#measured-variables" id="toc-measured-variables" class="nav-link" data-scroll-target="#measured-variables">Measured variables:</a>
+  <ul class="collapse">
+  <li><a href="#dependent-variables" id="toc-dependent-variables" class="nav-link" data-scroll-target="#dependent-variables">Dependent variables:</a></li>
+  <li><a href="#independent-variables" id="toc-independent-variables" class="nav-link" data-scroll-target="#independent-variables">Independent variables:</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#analysis-plan" id="toc-analysis-plan" class="nav-link" data-scroll-target="#analysis-plan">Analysis plan</a>
+  <ul class="collapse">
+  <li><a href="#statistical-models" id="toc-statistical-models" class="nav-link" data-scroll-target="#statistical-models">Statistical models:</a>
+  <ul class="collapse">
+  <li><a href="#multilevel-moderated-mediation-analysis" id="toc-multilevel-moderated-mediation-analysis" class="nav-link" data-scroll-target="#multilevel-moderated-mediation-analysis">Multilevel moderated mediation analysis</a></li>
+  </ul></li>
+  <li><a href="#transformations" id="toc-transformations" class="nav-link" data-scroll-target="#transformations">Transformations:</a></li>
+  <li><a href="#inference-criteria" id="toc-inference-criteria" class="nav-link" data-scroll-target="#inference-criteria">Inference criteria:</a></li>
+  <li><a href="#missing-data" id="toc-missing-data" class="nav-link" data-scroll-target="#missing-data">Missing data:</a></li>
+  </ul></li>
+  <li><a href="#other" id="toc-other" class="nav-link" data-scroll-target="#other">Other</a>
+  <ul class="collapse">
+  <li><a href="#other-1" id="toc-other-1" class="nav-link" data-scroll-target="#other-1">Other</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Psychology students’ use of ChatGPT</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell" data-hash="prereg_cache/html/analysis-preferences_6f29034387f4b12b4fabe434c13d0ed9">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Seed for random number generation</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="metadata" class="level1">
+<h1>Metadata</h1>
+<section id="title" class="level2">
+<h2 class="anchored" data-anchor-id="title">Title:</h2>
+<p>Psychology students’ use of ChatGPT</p>
+</section>
+<section id="description" class="level2">
+<h2 class="anchored" data-anchor-id="description">Description:</h2>
+<p>In recent years, the development of artificial intelligence (AI) has made rapid progress, particularly in the field of speech recognition and language processing technologies, such as ChatGPT. These AI tools are now available in various applications and are used by numerous users. However, despite the increasing prevalence of these technologies, there are few studies that investigate their potential impact on those who use them. The present study aims to fill this gap by examining the influence of using AI language models on the mental health of psychology students. Based on research findings on negative effects of information and technology overload (Feroz et al., 2021; Ji, 2023; Shao et al., 2022; Swar et al., 2017; Xu &amp; Yan, 2022), the relationship between daily usage behavior, information overload, and the desire for AI-related study content among psychology students will be investigated. In a diary study with call center employees, it was found that openness to experience as a personality trait can reduce the relationship between the use of advanced technologies and information overload (Shao et al., 2022). Moreover, in another study, it was shown that computer-related self-efficacy expectations can weaken the relationship between the use of digital technologies and information overload (Islam et al., 2020). Based on these findings, it will also be investigated whether AI-related self-efficacy expectations, openness to experience, and experiences in using ChatGPT can reduce the relationship between daily usage and information overload.</p>
+</section>
+</section>
+<section id="study-information" class="level1">
+<h1>Study information</h1>
+<section id="hypotheses" class="level2">
+<h2 class="anchored" data-anchor-id="hypotheses">Hypotheses:</h2>
+<ol type="1">
+<li>The daily use of ChatGPT and similar tools is positively associated with a) increased information overload a) on the same day, b) on the next day.</li>
+<li>The daily use of ChatGPT and similar tools is positively associated with a) an increased desire for AI-related educational content in studies a) on the same day, b) on the next day.</li>
+<li>The positive relationship between the use of ChatGPT and information overload is mitigated by a) general openness to experience, b) ChatGPT-related self-efficacy expectation, c) past experience with the use of ChatGPT and similar tools.</li>
+<li>The relationship between the use of ChatGPT and similar tools with AI-related anxieties on the next day is mediated by information overload.</li>
+</ol>
+</section>
+</section>
+<section id="design-plan" class="level1">
+<h1>Design Plan</h1>
+<section id="study-design" class="level2">
+<h2 class="anchored" data-anchor-id="study-design">Study design:</h2>
+<p>Between and within subjects design.</p>
+</section>
+<section id="randomization" class="level2">
+<h2 class="anchored" data-anchor-id="randomization">Randomization:</h2>
+<p>No randomization is required.</p>
+</section>
+</section>
+<section id="sampling-plan" class="level1">
+<h1>Sampling plan</h1>
+<section id="existing-data" class="level2">
+<h2 class="anchored" data-anchor-id="existing-data">Existing data:</h2>
+<p>Registration prior to creation of data.</p>
+</section>
+<section id="explanation-of-existing-data" class="level2">
+<h2 class="anchored" data-anchor-id="explanation-of-existing-data">Explanation of existing data:</h2>
+<p>No existing data.</p>
+</section>
+<section id="data-collection-procedures" class="level2">
+<h2 class="anchored" data-anchor-id="data-collection-procedures">Data collection procedures:</h2>
+<p>Through prolific.</p>
+</section>
+<section id="sample-size" class="level2">
+<h2 class="anchored" data-anchor-id="sample-size">Sample size:</h2>
+<p>According to the results of power calculations, we seek to recruit 120 participants.</p>
+</section>
+<section id="sample-size-rationale" class="level2">
+<h2 class="anchored" data-anchor-id="sample-size-rationale">Sample size rationale:</h2>
+<p>We need at least 120 participants to reach a power of at least 80% to detect the specified pre-determined fixed effects at an alpha level of 0.05. Please see power calculation below for more details:</p>
+<section id="power-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="power-analysis">Power analysis</h3>
+<div class="cell" data-hash="prereg_cache/html/unnamed-chunk-1_3e61cd96790c17ec1ed291647249b8ac">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load libraries</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Simulate multilevel data </span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate within-person level data</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>daily_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">subj_id =</span> <span class="fu">as.factor</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>, <span class="at">each =</span> <span class="dv">7</span>)),</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">day =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>, <span class="dv">100</span>),</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">ChatGPTuse =</span> <span class="fu">as.factor</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="dv">700</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.7</span>))),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">HoursUse =</span> <span class="fu">runif</span>(<span class="dv">700</span>, <span class="dv">1</span>, <span class="dv">12</span>),</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">infooverload =</span> <span class="fu">runif</span>(<span class="dv">700</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">anxiety =</span> <span class="fu">runif</span>(<span class="dv">700</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">KIteach =</span> <span class="fu">runif</span>(<span class="dv">700</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">selfeff =</span> <span class="fu">runif</span>(<span class="dv">700</span>, <span class="dv">1</span>, <span class="dv">5</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate between-person level data</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>subj_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">subj_id =</span> <span class="fu">as.factor</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>),</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">experience =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">technologyaff =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">age =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">18</span>, <span class="dv">40</span>),</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">gender =</span> <span class="fu">as.factor</span>(<span class="fu">sample</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="dv">100</span>, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.5</span>))),</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">extra =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">open =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">consc =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  <span class="at">agree =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">neuro =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="dv">1</span>, <span class="dv">5</span>)</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine both data frames</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>diary_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(daily_df, subj_df, <span class="at">by =</span> <span class="st">"subj_id"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-eavl="true" data-hash="prereg_cache/html/unnamed-chunk-2_06ce8fffbc1b7b51ad0f07aae692a118">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># create covariance matrix </span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>cor <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">0.35</span>, <span class="fl">0.23</span>, <span class="fl">0.29</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                 <span class="fl">0.35</span>, <span class="fl">1.0</span>, <span class="sc">-</span><span class="fl">0.19</span>, <span class="sc">-</span><span class="fl">0.19</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                 <span class="fl">0.23</span>, <span class="sc">-</span><span class="fl">0.19</span>, <span class="fl">1.0</span>, <span class="fl">0.23</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                 <span class="fl">0.29</span>, <span class="sc">-</span><span class="fl">0.19</span>, <span class="fl">0.23</span>, <span class="fl">1.0</span>), <span class="dv">4</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>cor <span class="ot">&lt;-</span> <span class="fu">t</span>(cor)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>stdevs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.4</span>, <span class="fl">0.4</span>, <span class="fl">0.4</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#stdevs is the vector that contains the standard deviations of your variables</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> stdevs <span class="sc">%*%</span> <span class="fu">t</span>(stdevs)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># b is an n*n matrix whose generic term is stdev[i]*stdev[j] (n is your number of variables)</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>a_covariance <span class="ot">&lt;-</span> b <span class="sc">*</span> cor  <span class="co">#your covariance matrix</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-hash="prereg_cache/html/unnamed-chunk-3_0d48e58d6efd521d2fb0747b5156281e">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Create fixed and random effects</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>fixed <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="co"># intercept </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>           <span class="fl">0.17</span>, <span class="co"># overload effect</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>          <span class="fl">0.16</span>, <span class="co"># experience effect</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>          <span class="fl">0.17</span>) <span class="co"># interaction effect</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fl">0.79</span> <span class="co"># residual standard deviation</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(simr)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Create the model</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">makeLmer</span>(infooverload <span class="sc">~</span> HoursUse<span class="sc">*</span>experience <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> HoursUse<span class="sc">|</span>subj_id), <span class="at">fixef=</span>fixed, <span class="at">VarCorr =</span> <span class="fu">matrix</span>(<span class="fu">c</span>(<span class="fl">0.4</span>, <span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.4</span>), <span class="dv">2</span>), <span class="at">sigma=</span>res, <span class="at">data=</span>diary_data)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="do">## Power analysis</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># sim &lt;- powerSim(model, nsim=100, test = fcompare(infooverload ~ HoursUse + experience + (1 + HoursUse|subj_id)))</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># sim</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="do">## Add more participants </span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>model_ext_subj <span class="ot">&lt;-</span> <span class="fu">extend</span>(model, <span class="at">along=</span><span class="st">"subj_id"</span>, <span class="at">n=</span><span class="dv">180</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>model_ext_day <span class="ot">&lt;-</span> <span class="fu">extend</span>(model, <span class="at">along=</span><span class="st">"day"</span>, <span class="at">n=</span><span class="dv">10</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="do">## Power curve</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>p_curve <span class="ot">&lt;-</span> <span class="fu">powerCurve</span>(model_ext_subj, <span class="at">nsim =</span> <span class="dv">40</span>, <span class="at">along =</span> <span class="st">'subj_id'</span>, <span class="at">test =</span> <span class="fu">fcompare</span>( <span class="sc">~</span> HoursUse <span class="sc">+</span> experience <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> HoursUse<span class="sc">|</span>subj_id)), <span class="at">breaks=</span><span class="fu">c</span>(<span class="dv">40</span>, <span class="dv">60</span>, <span class="dv">80</span>, <span class="dv">100</span>, <span class="dv">120</span>, <span class="dv">140</span>), <span class="at">progress =</span> T, <span class="at">seed =</span> <span class="dv">23</span>)</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Open jpeg file</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="fu">png</span>(<span class="at">file=</span><span class="st">"Docs/p_curve.png"</span>,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">width=</span><span class="dv">600</span>, <span class="at">height=</span><span class="dv">350</span>)</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(p_curve)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Docs/p_curve.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">Power Curve for different sample sizes</figcaption><p></p>
+</figure>
+</div>
+</section>
+</section>
+<section id="stopping-rule" class="level2">
+<h2 class="anchored" data-anchor-id="stopping-rule">Stopping rule:</h2>
+<p>Data will be collected until a sufficient sample size is reached (please see power analysis).</p>
+</section>
+</section>
+<section id="variables" class="level1">
+<h1>Variables</h1>
+<section id="manipulated-variables" class="level2">
+<h2 class="anchored" data-anchor-id="manipulated-variables">Manipulated variables:</h2>
+<p>None</p>
+</section>
+<section id="measured-variables" class="level2">
+<h2 class="anchored" data-anchor-id="measured-variables">Measured variables:</h2>
+<ul>
+<li>Experience using with ChatGPT and similar tools</li>
+<li>Past extent of usage of ChatGPT and similar tools</li>
+<li>technology affinity</li>
+<li>personality characteristics (openness, agreeableness, extraversion, neuroticism, conscientiousness)</li>
+<li>demographics (age, gender, study semester, study program)</li>
+<li>daily usage behavior of ChatGPT and similar tools
+<ul>
+<li>yes/ no; if yes:
+<ul>
+<li>which tool(s) were used?</li>
+<li>how many hours?</li>
+<li>for what purpose (study, private)?</li>
+</ul></li>
+</ul></li>
+<li>information overload</li>
+<li>AI anxiety</li>
+<li>wish to include training on how to use ChatGPT (or similar tools) in study curricula</li>
+<li>ChatGPT self-efficacy</li>
+</ul>
+<section id="dependent-variables" class="level3">
+<h3 class="anchored" data-anchor-id="dependent-variables">Dependent variables:</h3>
+<ul>
+<li>information overload</li>
+<li>ChatGPT anxiety</li>
+<li>wish to include training on how to use ChatGPT (or similar tools) in study curricula</li>
+</ul>
+</section>
+<section id="independent-variables" class="level3">
+<h3 class="anchored" data-anchor-id="independent-variables">Independent variables:</h3>
+<ul>
+<li>daily usage behavior of ChatGPT and similar tools (yes/ no)</li>
+<li>daily usage behavior of ChatGPT and similar tools (hours)</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="analysis-plan" class="level1">
+<h1>Analysis plan</h1>
+<section id="statistical-models" class="level2">
+<h2 class="anchored" data-anchor-id="statistical-models">Statistical models:</h2>
+<p>The data have a multilevel structure (daily surveys nested within persons), and therefore we used the lme4 package in R (Bates, Maechler, Bolker, &amp; Walker, 2015) to fit linear mixed effects models to the data. Pvalues were calculated using the lmerTest package in R, which uses a Satterthwaite approximation for degrees of freedom (Kuznetsova, Brockhoff, &amp; Christensen, 2013). In all models, we include random intercepts and slopes for the usage behavior and information overload. We model fixed direct effects (including interaction effects). We model fixed cross-level interaction effects between the extent of using ChatGPT and a) openness to experience, b) ChatGPT-related self-efficacy, c) past experience with ChatGPT and similar tools. Moderated mediation analyses using the R package mediation (Tingley, Yamamoto, Hirose, Keele, &amp; Imai, 2014) were conducted to examine the conditional indirect effects of usage behavior on ChatGPT anxiety through information overload. We first calculate whether there is an indirect effect of usage behavior on ChatGPT anxiety through information overload across the entire sample (i.e., without considering the role of the moderators). Conditional mediation effects are then calculated, establishing whether there is an indirect effect of usage bhavior on AI anxiety at different moderator levels (1 SD below mean, mean, 1 SD above mean) the mean on age; 26.40 years) and older employees (1 SD above the mean on age; 52.16 years). Please see below for an example model specified for independent variable = ChatGPTuse (hours used); mediator = infooverload (information overload); dependent variable = anxiety (ChatGPT anxiety); moderator = experience (previous experience using ChatGPT and similar tools):</p>
+<section id="multilevel-moderated-mediation-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="multilevel-moderated-mediation-analysis">Multilevel moderated mediation analysis</h3>
+<div class="cell" data-hash="prereg_cache/html/unnamed-chunk-4_3fa5a760068e1c68ef63e00d4a15b489">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mediation)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> diary_data</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create interaction term</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>inter_term <span class="ot">&lt;-</span> data<span class="sc">$</span>HoursUse <span class="sc">*</span> data<span class="sc">$</span>experience</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Model 1: mediator model</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>MedModel <span class="ot">&lt;-</span> <span class="fu">lmer</span>(infooverload <span class="sc">~</span> HoursUse <span class="sc">+</span> experience <span class="sc">+</span> inter_term <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> HoursUse<span class="sc">|</span> subj_id), <span class="at">data =</span> data)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Model 2: outcome model</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>OutModel <span class="ot">&lt;-</span> <span class="fu">lmer</span>(anxiety <span class="sc">~</span> infooverload <span class="sc">+</span> HoursUse <span class="sc">+</span> experience <span class="sc">+</span> inter_term <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">+</span> HoursUse <span class="sc">+</span> infooverload<span class="sc">|</span> subj_id), <span class="at">data =</span> data)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>mod_med_results <span class="ot">&lt;-</span> mediation<span class="sc">::</span><span class="fu">mediate</span>(MedModel, OutModel, <span class="at">treat =</span> <span class="st">"HoursUse"</span>, <span class="at">mediator =</span> <span class="st">"infooverload"</span>, <span class="at">control.value =</span> <span class="dv">0</span>, <span class="at">treat.value =</span> <span class="dv">1</span>, <span class="at">sims =</span> <span class="dv">1000</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod_med_results)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Causal Mediation Analysis 
+
+Quasi-Bayesian Confidence Intervals
+
+Mediator Groups: subj_id 
+
+Outcome Groups: subj_id 
+
+Output Based on Overall Averages Across Groups 
+
+                Estimate 95% CI Lower 95% CI Upper p-value
+ACME            0.000254    -0.004630         0.01    0.91
+ADE             0.027774    -0.054699         0.11    0.53
+Total Effect    0.028028    -0.054901         0.11    0.52
+Prop. Mediated  0.001199    -0.460541         0.50    0.94
+
+Sample Size Used: 500 
+
+
+Simulations: 1000 </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="transformations" class="level2">
+<h2 class="anchored" data-anchor-id="transformations">Transformations:</h2>
+<p>Within-person variables will be person-mean centered; Between-person variables will be grand-mean centered.</p>
+</section>
+<section id="inference-criteria" class="level2">
+<h2 class="anchored" data-anchor-id="inference-criteria">Inference criteria:</h2>
+<p>Confidence intervals and p-values.</p>
+</section>
+<section id="missing-data" class="level2">
+<h2 class="anchored" data-anchor-id="missing-data">Missing data:</h2>
+<p>We use complete observations.</p>
+</section>
+</section>
+<section id="other" class="level1">
+<h1>Other</h1>
+<section id="other-1" class="level2">
+<h2 class="anchored" data-anchor-id="other-1">Other</h2>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

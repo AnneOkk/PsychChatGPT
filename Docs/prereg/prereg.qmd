@@ -1,0 +1,302 @@
+---
+title: "Psychology students' use of ChatGPT"
+#bibliography: "../../config/AI_Attitudes.bib"
+csl: "../../config/apa.csl"
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: true
+  include: true
+prefer-html: true
+#author: ""
+format: 
+  docx:
+    reference-doc: "../../config/template_word.docx"
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+```
+
+# Metadata
+
+## Title: 
+
+The predictors of NLP chatbot usage and strain among university students
+
+## Description:
+
+The research investigates the relationship between the user perceptions and the usage frequency of natural language processing (NLP) chatbots. We measure daily perceived usefulness and ease of use of these chatbots, and the impact each has on daily usage. Additionally, user anxiety towards NLP chatbots and information overload experienced from using them will be examined as predictors of NLP chatbot usage and user strain. As part of exploratory analyses, we will investigate the role of familiarity with NLP chatbots and training experience on perceived usefulness and ease of use, the role of NLP usage on study goal achievement, and the role of openness to experience as a moderator of the relationship of usefulness and ease of use with daily usage.  
+
+# Study information
+
+## Hypotheses:
+
+H1: Daily perceived usefulness of NLP chatbots is positively related to a) daily NLP chatbot usage (yes or no) and b) daily NLP chatbot usage time in minutes.
+
+H2: Daily perceived ease of use of NLP chatbots is positively related to a) daily NLP chatbot usage (yes or no) and b) daily NLP chatbot usage time in minutes.
+
+H3: NLP chatbot anxiety is a) negatively related to daily NLP chatbot usage (yes or no), b) negatively related to daily NLP chatbot usage time in minutes, and c) positively related to daily NLP chatbot strain.
+
+H4: Daily information overload is a) negatively related to daily NLP chatbot usage (yes or no), b) negatively related to daily NLP chatbot usage time in minutes, and c) positively related to daily NLP chatbot strain.
+
+# Design Plan
+
+## Study design: 
+
+Between and within subjects design. 
+
+## Randomization:
+
+No randomization is required.
+
+# Sampling plan 
+
+## Existing data:
+
+Registration prior to creation of data.
+
+## Explanation of existing data:
+
+No existing data.
+
+## Data collection procedures: 
+
+Through university participant recruitment system and email contacts.
+
+## Sample size:
+
+According to the results of power calculations, we seek to recruit a minimum of 100 participants.
+
+## Sample size rationale:
+
+We need at least 100 participants to reach a power of at least 80% to detect the specified pre-determined fixed effects at an alpha level of 0.05. Please see power calculation attached for more details.
+
+### Power analysis 
+
+```{r}
+# Load libraries
+library(dplyr)
+
+# Set seed for reproducibility
+set.seed(42)
+
+## Simulate multilevel data 
+# Generate within-person level data
+daily_df <- data.frame(
+  subj_id = as.factor(rep(1:100, each = 5)),
+  day = rep(1:5, 100),
+  Chatuse = as.factor(sample(c(1, 2), 500, replace = TRUE, prob = c(0.3, 0.7))),
+  MinsUse = runif(500, 1, 180),
+  Useful = runif(500, 1, 5),
+  Ease = runif(500, 1, 5),
+  Over = runif(500, 1, 5)
+)
+
+# Generate between-person level data
+subj_df <- data.frame(
+  subj_id = as.factor(1:100),
+  experience = runif(100, 1, 5),
+  anx = runif(100, 1, 5),
+  age = runif(100, 18, 40),
+  gender = as.factor(sample(c(1, 2), 100, replace = TRUE, prob = c(0.5, 0.5))),
+  open = runif(100, 1, 5)
+)
+
+# Combine both data frames
+diary_data <- left_join(daily_df, subj_df, by = "subj_id")
+```
+
+```{r}
+#| eavl: true
+library(tidyverse)
+# create covariance matrix 
+cor <- matrix(c(1.0, 0.35, 0.23, 0.29,
+                 0.35, 1.0, -0.19, -0.19,
+                 0.23, -0.19, 1.0, 0.23,
+                 0.29, -0.19, 0.23, 1.0), 4)
+cor <- t(cor)
+stdevs <- c(0.4, 0.4, 0.4, 0.4)
+#stdevs is the vector that contains the standard deviations of your variables
+b <- stdevs %*% t(stdevs)
+# b is an n*n matrix whose generic term is stdev[i]*stdev[j] (n is your number of variables)
+a_covariance <- b * cor  #your covariance matrix
+```
+
+```{r}
+#| eval: false
+library(simr)
+
+fixed <- c(0.60, # intercept 
+           0.25, # usefulness effect
+          0.19, # ease effect
+          -0.19, # Anxiety effect
+          -0.16) # Over effect
+
+res <- 0.79 # residual standard deviation
+
+library(simr)
+library(future)
+## Create the model
+tglmer <- makeGlmer(Chatuse ~ Useful + Ease + anx + Over + (1 |subj_id), 
+                    family="binomial", fixef=fixed, VarCorr=0.5, data=diary_data)
+
+
+pstests <- powerSim(tglmer, nsim=30)
+
+## Add more participants 
+model_ext_subj <- extend(tglmer, along="subj_id", n=180)
+## Power curve
+p_curve_glmm <- powerCurve(model_ext_subj, nsim = 40, along = 'subj_id', test = fcompare( ~ Ease + anx + Over + (1 |subj_id)), breaks=c(40, 60, 80, 100, 120, 140, 160), progress = T, seed = 23)
+
+png(file="Docs/p_curve_glmm.png",
+width=600, height=350)
+plot(p_curve_glmm)
+dev.off()
+```
+
+![Power Curve for different sample sizes for NLP chatbot used as outcome variable](Docs/p_curve_glmm.png)
+
+```{r}
+#| eval: false
+## Create fixed and random effects
+# 0.2
+fixed <- c(0.60, # intercept 
+           0.25, # usefulness effect
+          0.19, # ease effect
+          -0.19, # Anxiety effect
+          -0.16) # Over effect
+
+res <- 0.79 # residual standard deviation
+
+library(simr)
+library(future)
+## Create the model
+model <- makeLmer(MinsUse ~ Useful + Ease + anx + Over + (1 |subj_id), fixef=fixed,VarCorr = 0.5, sigma=res, data=diary_data)
+
+powerSim(model)
+
+## Add more participants 
+model_ext_subj <- extend(model, along="subj_id", n=180)
+model_ext_day <- extend(model, along="day", n=10)
+
+## Power curve
+p_curve <- powerCurve(model_ext_subj, nsim = 40, along = 'subj_id', test = fcompare( ~ Ease + anx + Over + (1 |subj_id)), breaks=c(40, 60, 80, 100, 120, 140, 160, 180), progress = T, seed = 23)
+
+plot(p_curve)
+# 1. Open jpeg file
+png(file="Docs/p_curve.png",
+width=600, height=350)
+plot(p_curve)
+dev.off()
+
+```
+
+![Power Curve for different sample sizes for minutes used as outcome variable](Docs/p_curve.png)
+
+## Stopping rule:
+
+Data will be collected until a sufficient sample size is reached (please see power analysis).
+
+# Variables
+
+## Manipulated variables:
+
+None
+
+## Measured variables:
+
+- Daily NLP chatbot usage time in minutes
+- Daily NLP chatbot usage (yes or no)
+- Daily NLP chatbot strain 
+- Daily goal progress 
+- Daily perceived usefulness of NLP chatbots 
+- Daily perceived ease of use of NLP chatbots 
+- Daily information overload in relation to NLP chatbot usage 
+
+- Current NLP chatbot training
+- Type of past NLP chatbot training
+- Wish for NLP chatbot training 
+- NLP chatbot technology anxiety
+- Perceived media perception of NLP chatbots 
+- Familiarity using NLP chatbots
+- Personality (Big 5)
+- Demographic information (Age, gender, study field, country of residence)
+
+### Dependent variables:
+
+- Daily NLP chatbot usage time in minutes
+- Daily NLP chatbot usage (yes or no)
+- Daily NLP chatbot strain 
+
+### Independent variables:
+
+- Daily perceived usefulness of NLP chatbots 
+- Daily perceived ease of use of NLP chatbots 
+- Daily information overload in relation to NLP chatbot usage 
+- NLP chatbot technology anxiety
+
+#### Covariates (control variables):
+
+- Perceived media perception of NLP chatbots 
+- Familiarity using NLP chatbots
+- Personality (Big 5)
+- Demographic information (Age, Gender, Study field)
+
+
+## Indices
+
+Mean scores
+
+# Analysis plan
+
+## Statistical models:
+
+The data have a multilevel structure (daily surveys nested within persons), and therefore we used the lme4 package in R (Bates, Maechler, Bolker, & Walker, 2015) to fit linear mixed models (for daily NLP chatbot usage time in minutes) and generalized linear mixed models (for daily NLP chatbot usage (yes or no)) to the data. P-values will be calculated using the lmerTest package in R (Kuznetsova et al., 2017). In all models, we include random intercepts. We control for potential confounding variables (please see Variables section) and report effects with control variables added in case they change the results.
+
+### References:
+
+Bates, D., Maechler, M., Bolker, B., Walker, S., Christensen, R. H. B., Singmann, H., ... & Green, P. (2009). Package ‘lme4’. URL http://lme4. r-forge. r-project.org.
+
+Kuznetsova, A., Brockhoff, P. B., & Christensen, R. H. (2017). lmerTest package: tests in linear mixed effects models. Journal of statistical software, 82, 1-26.
+
+
+## Transformations:
+
+Within-person variables will be person-mean centered; Between-person variables will be grand-mean centered.
+
+## Inference criteria:
+
+Confidence intervals and p-values. 
+
+## Data exclusion 
+
+We will exclude people who fail the attention check item (Meade & Craig, 2012). 
+
+### References: 
+
+Meade, A. W., & Craig, S. B. (2012). Identifying careless responses in survey data. Psychological methods, 17(3), 437.
+
+## Missing data: 
+
+We use average summary scores for individuals who provide data on at least 3 of the 5 days for the days missing (Griffiths et al., 2022). Additional sensitivity analyses will be conducted to avoid biased results. 
+
+### References
+
+Griffiths, P., Williams, A., & Brohan, E. (2022). How do the number of missing daily diary days impact the psychometric properties and meaningful change thresholds arising from a weekly average summary score?. Quality of Life Research, 31(12), 3433-3445.
+
+# Other
+
+## Other 
+
+
+
+
+
+
