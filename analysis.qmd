@@ -1,6 +1,6 @@
 ---
-title: "AI-Enabled Clinical Decision Support Tools for Mental Healthcare: A Product Review"
-author: "Anne-Kathrin Kleine, Eesha Kokje, Pia Hummelsberger, Eva Lermer, & Susanne Gaube"
+title: "NLP Chatbots"
+author: "Anne-Kathrin Kleine, Eva Lermer, & Susanne Gaube"
 bibliography: "../../config/Products.bib"
 keywords: "artificial intelligence, mental healthcare"
 csl: "../../config/apa.csl"
@@ -9,7 +9,7 @@ execute:
   warning: false
   message: false
   cache: true
-  include: true
+  include: false
 prefer-html: true
 format: 
   docx:
@@ -22,10 +22,23 @@ editor:
     wrap: 72
 ---
 
+# Data preprocessing 
+
 ```{r}
-mydata <- load_excel_files("data/raw") %>% 
+source("R/data_preprocessing.R")
+library(tidyverse)
+```
+
+```{r}
+##############################
+## START Data preprocessing ##
+##############################
+
+mydata <- load_sav_files("data/raw_010224") %>% 
   purrr::map(., ~create_id_column(.x)) %>% # creating the ID columns 
-  combineT1s(.) %>% # combine the two T1 data frames
+  combineT1s(.) # combine the two T1 data frames
+  
+mydata <- mydata %>% 
   purrr::map(., remove_cols) %>% # remove columns that are not relevant
   purrr::map(., replace_column_namesTool) %>% # replace "Tool" in df7 and df8 with "toolused" as in the other dfs
   purrr::map(., to_lower_case) %>%  # make all column names lower case
@@ -34,37 +47,1216 @@ mydata <- load_excel_files("data/raw") %>%
   purrr::map(., remove_na_rows) %>% # remove rows that contain only NA
   purrr::map(., separate_entries_toolused) %>% # create new columns for each tool mentioned 
   purrr::map(., remove_white_spaces) %>% # remove white space
-  purrr::map(., transform_entries_toolused) # transform names of AI tools
-
+  purrr::map(., reformat_id) %>% # reformat the ID column to make it follow the pattern
+  purrr::map(., transform_entries_toolused) %>%  # transform names of AI tools
+  purrr::map(., ~ capitalize_id(.)) %>%  # capitalize all letters in ID
+  purrr::map(., remove_duplicates) # remove duplicate entries based on id
+  
+cols <- paste0('t', 1:length(mydata), 'sonaid')
+mydata <- map2(mydata, cols, replace_id) %>% # Replace ID with SONAID whenever possible
+  purrr::map(., replace_na_id) %>% # replace __ in id column with NA
+  purrr::map(., remove_duplicates)
 mydata[[8]] <- replace_column_namest7t8(mydata[[8]]) # replace t7 with t8 in t8 df 
 
-df_wide <- join_dfs_by_id(mydata) %>% 
-  fill_na_duplicates(.)
+mydata <- mydata %>% 
+  assign_anonymous_ids(.) %>%  # assign anonymous IDs across all dfs
+  purrr::map(., remove_cols2) # remove non-anonym columns
+############################
+## END Data preprocessing ##
+############################
+```
 
 
-df_wide[duplicated(df_wide$id) | duplicated(df_wide$id, fromLast = TRUE),]
+## Data export
+
+```{r}
+#####################################
+## START Export data and meta data ##
+#####################################
+
+df_names <- c("NLP_B", "NLP_D1", "NLP_D2", "NLP_D3", "NLP_D4", "NLP_D5", "NLP_F1", "NLP_F2")
+
+# rename dataframes
+mydata <- setNames(mydata, paste0(df_names, ".sav"))
+
+# Assign the data frames in the list to the global environment
+list2env(mydata, envir = .GlobalEnv)
+
+for(i in seq_along(mydata)) {
+  write_sav(mydata[[i]], file.path("data", "preprocessed", paste0(names(mydata)[i])))
+}
+
+library(DDIwR)
+lapply(names(mydata), function(df_name) { # to DDI
+  file_path <- paste0("data/preprocessed/", df_name) # construct file path
+  # Call your conversion function on each file
+  convert(file_path, to = "DDI")
+})
+
+lapply(names(mydata), function(df_name) { # to R
+  file_path <- paste0("data/preprocessed/", df_name) # construct file path
+  # Call your conversion function on each file
+  convert(file_path, to = "R")
+})
+
+meta_list <- lapply(names(mydata), function(df_name) {
+  file_path <- paste0("data/preprocessed/", df_name) # construct file path
+  # Call your conversion function on each file
+  getMetadata(file_path)
+})
+
+names(meta_list) <- names(mydata) # name list elements according to their respective data frames
+
+# Save the entire meta_data_list into an .rds file
+saveRDS(meta_list, "data/preprocessed/meta_data.rds")
+
+names(mydata) <- sub("\\.sav$", "", names(mydata))
+library(writexl)
+lapply(names(mydata), function(df_name) { 
+  write_xlsx(mydata[[df_name]], paste0("data/preprocessed/", df_name, ".xlsx"))
+})
+
+mydata <- load_excel_files("data/preprocessed") 
+# Assume df_list is your list of data frames
+for(i in 2:length(mydata)) {
+  mydata[[i]] <- mydata[[i]] %>% 
+      mutate(!!paste0("t", i, "id") := id)
+}
+
+final_df <- mydata[[1]]
+for(i in 2:length(mydata)) {
+  final_df <- full_join(final_df, mydata[[i]], by = "id") 
+}
+
+write_xlsx(final_df, "data/wide/df_wide.xlsx")
+
+###################################
+## END Export data and meta data ##
+###################################
+```
+
+## Data preparation 
+
+```{r}
+#######################################
+## Preparing data frame for analyses ##
+#######################################
+
+# Recode Personality variables https://socialwork.buffalo.edu/content/dam/socialwork/home/self-care-kit/brief-big-five-personality-inventory.pdf
+df_wide <- read_excel("data/wide/df_wide.xlsx")
+df <- df_wide %>% rename(t1personality_1_r = t1personality_1,
+                              t1personality_7_r = t1personality_7,
+                              t1personality_3_r = t1personality_3,
+                              t1personality_4_r = t1personality_4,
+                              t1personality_5_r = t1personality_5)
+
+df <- if ("t1personality_1_r" %in% names(df)) {
+  df %>% rename(t1personality_1 = t1personality_1_r) %>% 
+    mutate(t1personality_1 = 6 - t1personality_1)
+}
+
+df <- if ("t1personality_7_r" %in% names(df)) {
+  df %>% rename(t1personality_7 = t1personality_7_r) %>% 
+    mutate(t1personality_7 = 6 - t1personality_7)
+}
+
+df <- if ("t1personality_3_r" %in% names(df)) {
+  df %>% rename(t1personality_3 = t1personality_3_r) %>% 
+    mutate(t1personality_3 = 6 - t1personality_3)
+}
+
+df <- if ("t1personality_4_r" %in% names(df)) {
+  df %>% rename(t1personality_4 = t1personality_4_r) %>% 
+    mutate(t1personality_4 = 6 - t1personality_4)
+}
+
+df <- if ("t1personality_5_r" %in% names(df)) {
+  df %>% rename(t1personality_5 = t1personality_5_r) %>% 
+    mutate(t1personality_5 = 6 - t1personality_5)
+}
+
+# calculate means for personality variables
+df <- df %>%  
+  mutate(t1extraversion = rowMeans(select(., t1personality_1, t1personality_6), na.rm = TRUE), t1personality_1=NULL, t1personality_6=NULL) %>% 
+  mutate(t1agreeableness = rowMeans(select(., t1personality_2, t1personality_7), na.rm = TRUE), t1personality_2=NULL, t1personality_7=NULL) %>% 
+  mutate(t1conscientiousness = rowMeans(select(., t1personality_3, t1personality_8), na.rm = TRUE), t1personality_3=NULL, t1personality_8=NULL) %>% 
+  mutate(t1neuroticism = rowMeans(select(., t1personality_4, t1personality_9), na.rm = TRUE), t1personality_4=NULL, t1personality_9=NULL) %>% 
+  mutate(t1openness = rowMeans(select(., t1personality_5, t1personality_10), na.rm = TRUE), t1personality_5=NULL, t1personality_10=NULL)
+```
+
+
+```{r}
+# rename ID
+df_wide <- df %>% rename(t1id = id)
+  
+# Assign value 0 if no tool was used and 1 if tool was used 
+for (i in 1:8) {
+  id_column <- paste0('t', i, 'id')
+  tooluse_column <- paste0('t', i, 'tooluse')
+  toolused_column <- paste0('t', i, 'toolused_1')
+  
+  df_wide[[tooluse_column]] <- ifelse(!is.na(df_wide[[toolused_column]]) & !is.na(df_wide[[id_column]]), 1,
+                                      ifelse(is.na(df_wide[[toolused_column]]) & !is.na(df_wide[[id_column]]), 0, NA))
+}
+
+df <- transform_entries_toolused_wide(df_wide) # transform tool entries to unique tool names
+df <- df %>%
+  mutate(across(contains('toolused'), 
+                ~ifelse(. %in% c("AIVideoGenerator", "AIDungeon", "connectedpapers.com", "DeepL", "GitHub", "ResearchGate", "You.com"),  # remove all tools that are not NLP Chatbots
+                NA, .))) %>% 
+  mutate(across(contains('toolused'), 
+                ~ifelse(. %in% c("CiSA(WebsiteAugsburg.de)", "SnapchatAI", "Xx", "DeppGPT(Postillon)"),  # remove all tools that may not be used for study tasks
+                NA, .)))
+```
+
+
+```{r}
+df <- concat_columns_gopro(df) %>% 
+  concat_columns_toolused(.) %>% # concatenate all used tools into one column
+  rename_values_training(.) %>% # rename training values with actual training characters 
+  concat_values_training(.) %>% # concatenate all training columns into one column
+  rename_values_task(.) %>%  # rename task values with actual task characters 
+  concat_values_task(.)  # concatenate all task columns into one column
+
+df <- data.frame(lapply(df, function(x) {if(is.character(x)) gsub("NA, |NA|, NA", "", x) else x})) # remove NA values from 
+
+df <-  df %>% mutate(t1trainingreceived = ifelse(t1training == "", 0, 1)) %>% # create columns that indicate whether training has been received
+  mutate(t7trainingreceived = ifelse(t7training == "", 0, 1)) %>% 
+  mutate(t8trainingreceived = ifelse(t8training == "", 0, 1))
+
+# Recode receivetr
+df$t1receivetr[df$t1receivetr == 2] <- 0
+```
+
+
+```{r}
+# Create country variable
+df <- normalize_countries(df, "t1country_4_text", "t1country")
+
+df$t1country <- factor(df$t1country, labels = c("Germany", "Austria", "Switzerland", "Greece", "Turkey", "Netherlands", 
+                       "England", "China", "United States", "Bulgaria"))
+
+
+# Create studies variable
+df <- normalize_studies(df, "t1studies_10_text", "t1studies")
+
+df$t1studies <- factor(df$t1studies, labels = c("Engineering", "Social Sciences", "Humanities", 
+                                                 "Business & Law", "Medicine & Health", "Natural Sciences", 
+                                                 "Arts & Design", "Language Studies",
+                                                 "Computer Sciences", 
+                                                 "Computational Linguistics", 
+                                                 "Neuroscience", "Education"))
+
+# Create degrees variable
+df <- normalize_degree(df, "t1degree_4_text", "t1degree")
+
+df$t1degree <- factor(df$t1degree, labels = c("Bachelor", "Master", "PhD", "State Examination"))
+```
+
+
+## Data reordering 
+
+```{r}
+# Remove redundant ID columns and relocating columns
+df <- df %>% select(-matches("t[2-8]id")) %>% 
+  relocate(starts_with("t1"), .after = last_col()) %>%
+  relocate(starts_with("t2"), .after = last_col()) %>%
+  relocate(starts_with("t3"), .after = last_col()) %>%
+  relocate(starts_with("t4"), .after = last_col()) %>% 
+  relocate(starts_with("t5"), .after = last_col()) %>% 
+  relocate(starts_with("t6"), .after = last_col()) %>% 
+  relocate(starts_with("t7"), .after = last_col()) %>% 
+  relocate(starts_with("t8"), .after = last_col()) %>% 
+# Reordering the demographic, personality, and tool variables for each time point:
+  relocate(matches("t1id|t1age|t1gender|t1country|t1languageprof|t1studies|t1degree"), .before = starts_with("t1")) %>%
+  relocate(matches("t1extraversion|t1agreeableness|t1conscientiousness|t1neuroticism|t1openness"), .before = starts_with("t1experience")) %>%
+  relocate(matches("t1tool"), .before = starts_with("t1ease")) %>% 
+  relocate(matches("t1id"), .before = starts_with("t1age")) %>% 
+  relocate(matches("t1training"), .before = starts_with("t1training_7_text")) %>% 
+  relocate(matches("t1media"), .before = starts_with("t1useful_1")) %>% 
+
+  relocate(matches("t2toolused"), .before = starts_with("t2timespent")) %>% 
+  relocate(matches("t2tooluse"), .before = starts_with("t2timespent")) %>% 
+  relocate(matches("t2task"), .before = starts_with("t2timespent")) %>% 
+  relocate(matches("t3toolused"), .before = starts_with("t3timespent")) %>% 
+  relocate(matches("t3tooluse"), .before = starts_with("t3timespent")) %>% 
+  relocate(matches("t3task"), .before = starts_with("t3timespent")) %>% 
+  relocate(matches("t4toolused"), .before = starts_with("t4timespent")) %>% 
+  relocate(matches("t4tooluse"), .before = starts_with("t4timespent")) %>% 
+  relocate(matches("t4task"), .before = starts_with("t4timespent")) %>% 
+  relocate(matches("t5toolused"), .before = starts_with("t5timespent")) %>% 
+  relocate(matches("t5tooluse"), .before = starts_with("t5timespent")) %>% 
+  relocate(matches("t5task"), .before = starts_with("t5timespent")) %>% 
+  relocate(matches("t6toolused"), .before = starts_with("t6timespent")) %>% 
+  relocate(matches("t6tooluse"), .before = starts_with("t6timespent")) %>% 
+  relocate(matches("t6task"), .before = starts_with("t6timespent")) %>% 
+  
+  relocate(matches("t7toolused"), .before = starts_with("t7training_7_text")) %>% 
+  relocate(matches("t7tooluse"), .before = starts_with("t7training_7_text")) %>% 
+  relocate(matches("t7training"), .before = starts_with("t7training_7_text")) %>% 
+  relocate(matches("t7trainingreceived"), .before = starts_with("t7wishtr")) %>% 
+  relocate(matches("t7media"), .before = starts_with("t7useful_1")) %>% 
+  
+  relocate(matches("t8toolused"), .before = starts_with("t8training_7_text")) %>% 
+  relocate(matches("t8tooluse"), .before = starts_with("t8training_7_text")) %>% 
+  relocate(matches("t8training"), .before = starts_with("t8training_7_text")) %>% 
+  relocate(matches("t8trainingreceived"), .before = starts_with("t8wishtr")) %>% 
+  relocate(matches("t8media"), .before = starts_with("t8useful_1")) 
+
+```
+
+## Attention checks 
+
+```{r}
+########################
+### Attention checks ###
+########################
+
+df <- df %>% mutate(t1anx_8 = ifelse(t1anx_8 == 3, 5, t1anx_8))
+
+df <- df %>% mutate(
+  failed_checks = apply(cbind(
+    t1anx_8 != 5, 
+    t2over_4 != 2,
+    t3over_4 != 2,
+    t4over_4 != 2,
+    t5over_4 != 2,
+    t6over_4 != 2,
+    t7ease_7 != 3,
+    t8ease_7 != 3), 
+  1, 
+  function(x) sum(x, na.rm = TRUE))
+)
+
+df %>% 
+  filter(failed_checks > 1)
+
+df <- df %>% 
+  filter(failed_checks < 2) %>%
+  select(-matches("t1anx_8|t[2-6]over_4|t[7,8]ease_7|failed_checks|commitment"))
+```
+
+## Reliabilities 
+
+```{r}
+#| include: true
+#####################
+### Reliabilities ###
+#####################
+longer <- df %>%
+  rename(id = t1id) %>% 
+  select(-matches("failed_checks|t[1-8]id|commitment")) %>% 
+ pivot_longer(matches("t1|t2|t3|t4|t5|t6|t7|t8"),
+    names_pattern = "(^t.)(.*)",
+    names_to = c( "set", ".value"),
+    names_repair = "unique" # add this line
+ )
+
+model <- '
+    level: 1
+        useful_w  =~  useful_1 + useful_2 + useful_3 + useful_4 + useful_5 + useful_6 
+        ease_w =~ ease_1 + ease_2 + ease_3 + ease_4 + ease_5 + ease_6
+        over_w  =~  over_1 + over_2 + over_3
+        strain_w =~ strain_1 + strain_2 + strain_3 + strain_4
+        gopro_w =~ gopro_1 + gopro_2 + gopro_3 
+
+    level: 2
+        useful_b  =~  useful_1 + useful_2 + useful_3 + useful_4 + useful_5 + useful_6 
+        ease_b =~ ease_1 + ease_2 + ease_3 + ease_4 + ease_5 + ease_6
+        over_b  =~  over_1 + over_2 + over_3
+        strain_b =~ strain_1 + strain_2 + strain_3 + strain_4
+        gopro_b =~ gopro_1 + gopro_2 + gopro_3
+'
+
+library(lavaan)
+fit <- sem(model, data = longer, cluster = "id", std.lv  = TRUE, verbose = FALSE, estimator="MLR")
+summary(fit, fit.measures=TRUE)
+
+alpha_within <- semTools::reliability(fit, what = c("alpha", "omega", "omega2", "omega3", "ave"),
+  return.total = FALSE, dropSingle = TRUE, omit.factors = character(0),
+  omit.indicators = character(0), omit.imps = c("no.conv", "no.se"))$within
+
+variables <- colnames(alpha_within) %>% gsub("_w", "", .)
+
+alpha_within <- alpha_within[1, ] %>% round(., 2) %>%  gsub("0.", ".", .) 
+
+alpha_between <- semTools::reliability(fit, what = c("alpha", "omega", "omega2", "omega3", "ave"),
+  return.total = FALSE, dropSingle = TRUE, omit.factors = character(0),
+  omit.indicators = character(0), omit.imps = c("no.conv", "no.se"))$id[1, ] %>% round(., 2) %>% gsub("0.", ".", .)
+
+rels <- cbind(names_w, rels_within, rels_between) %>% data.frame(.)
+
+rels
+```
+
+
+## Composite dataframe and correlations 
+
+```{r}
+###################################
+### Composites and correlations ###
+###################################
+
+id <- df %>% select(t1id)
+
+df_oneitem <- df %>% dplyr::select_if(., is.numeric) %>% select(-matches("useful|ease|anx|strain|over|gopro|id|gender"))
+
+comp_split <- df %>% dplyr::select_if(., is.numeric) %>% select(matches("useful|ease|anx|strain|over|gopro")) %>% 
+  split.default(sub("_\\d{1,2}$", "", names(.))) 
+
+alph_split <- df %>% dplyr::select_if(., is.numeric) %>% select(matches("useful|ease|anx|strain|over|gopro")) %>% 
+  split.default(sub("_\\d{1,2}$", "", names(.))) 
+
+comp <- purrr::map(comp_split, ~ rowMeans(.x), data = .x)
+
+alph <- purrr::map(alph_split, ~ psych::alpha(.x), data = .x) %>%
+  purrr::map(~ .x$total)
+
+# add demos and single items 
+comp_df <- do.call("cbind", comp) %>%
+  cbind(df_oneitem, .) 
+alph_df <- do.call("rbind", alph) %>% round(., 2)
+```
+
+
+```{r}
+###########################################
+### Preparation of composite data frame ###
+###########################################
+
+comp_df <- comp_df %>% 
+  relocate(starts_with("t1"), .after = last_col()) %>%
+  relocate(starts_with("t2"), .after = last_col()) %>%
+  relocate(starts_with("t3"), .after = last_col()) %>%
+  relocate(starts_with("t4"), .after = last_col()) %>% 
+  relocate(starts_with("t5"), .after = last_col()) %>% 
+  relocate(starts_with("t6"), .after = last_col()) %>% 
+  relocate(starts_with("t7"), .after = last_col()) %>% 
+  relocate(starts_with("t8"), .after = last_col())
+```
+
+## Data processing composite dataframe 
+
+```{r}
+NonNACount <- function(x) {
+  return(sum(!is.na(x)))
+}
+
+comp_df <- comp_df  %>% rowwise() %>% 
+  mutate(tooluse_total = (t2tooluse + t3tooluse + t4tooluse + t5tooluse + t6tooluse) / 
+           NonNACount(c(t2tooluse, t3tooluse, t4tooluse, t5tooluse, t6tooluse))) 
+
+for (col in names(comp_df)[which(names(comp_df) == 't1age'):which(names(comp_df) == 't1media')]){
+    names(comp_df)[names(comp_df) == col] <-  sub("t", "b", col)
+}
+
+names(comp_df)[names(comp_df) == "t1anx"] <-  sub("t", "b", "t1anx")
+
+names(comp_df)[names(comp_df) == "tooluse_total"] <-  sub("tool", "b1tool", "tooluse_total")
+
+for (col in names(comp_df)[which(names(comp_df) == 't7trainingreceived'):which(names(comp_df) == 't7media')]){
+    names(comp_df)[names(comp_df) == col] <-  sub("t7", "f1", col)
+}
+
+names(comp_df)[names(comp_df) == "t7anx"] <-  sub("t7", "f1", "t7anx")
+
+
+for (col in names(comp_df)[which(names(comp_df) == 't8trainingreceived'):which(names(comp_df) == 't8media')]){
+    names(comp_df)[names(comp_df) == col] <-  sub("t8", "f2", col)
+}
+
+names(comp_df)[names(comp_df) == "t8anx"] <-  sub("t8", "f2", "t8anx")
+
+
+comp_df$t2toolusenextday <- lead(comp_df$t2tooluse)
+comp_df$t3toolusenextday <- lead(comp_df$t3tooluse)
+comp_df$t4toolusenextday <- lead(comp_df$t4tooluse)
+comp_df$t5toolusenextday <- lead(comp_df$t5tooluse)
+comp_df$t6toolusenextday <- lead(comp_df$t6tooluse)
+
+
+
+longer_comp <- comp_df %>% 
+ pivot_longer(matches("t1|t2|t3|t4|t5|t6|t7|t8"),
+    names_pattern = "(t.)(.*)", 
+   names_to = c( "set", ".value")
+ ) %>% mutate(set = (as.numeric(textclean::mgsub(.$set, c("t", "_"), c("", "")))))
+
+
+longer_comp$id <- rep(seq(1,nrow(comp_df)), each=8)
+
+```
+
+
+```{r}
+# Adding count variable
+
+longer_comp <- longer_comp %>% group_by(id) %>% mutate(total_tooluse = sum(tooluse, na.rm = TRUE))
+```
+
+# Multilevel modelling 
+
+## Plotting the longitudinal data
+
+```{r}
+#| include: true
+
+ggplot(longer_comp, aes(x = ease, y = useful, color = as.factor(id), group = id)) + 
+  geom_point() + 
+  geom_line() + 
+  theme_classic(base_size = 18) + 
+  theme(legend.position = "none") + 
+  labs(title = "Ease of use by usefulness", y = "Usefulness", x = "Ease of use")
+```
+
+## Plotting count density
+
+```{r}
+#| include: true 
+
+ggplot(longer_comp, aes(x = total_tooluse)) +
+  geom_density(aes(y = after_stat(count)), alpha = 0.25)
+```
+
+
+## Impute missing data 
+
+```{r}
+library(mice)
+allVars <- names(longer_comp)
+
+missVars <- names(longer_comp)[colSums(is.na(longer_comp)) > 0]
+
+predictorMatrix <- matrix(0, ncol = length(allVars), nrow = length(allVars))
+rownames(predictorMatrix) <- allVars
+colnames(predictorMatrix) <- allVars
+
+###  Specify Variables informing imputation
+imputerVars <- c("b1age","b1extraversion","b1agreeableness","b1conscientiousness","b1neuroticism","b1openness","b1experience","b1wishtr", "b1media", "b1anx", "f1wishtr", "f1media", "f1anx", "f2wishtr", "f2media", "f2anx", "ease", "useful", "timespent", "hoursused_4", "hoursstudy_4", "gopro", "over", "strain")
+## Keep variables that actually exist in dataset
+imputerVars <- intersect(unique(imputerVars), allVars)
+imputerVars
+imputerMatrix <- predictorMatrix
+imputerMatrix[,imputerVars] <- 1
+colSums(imputerMatrix)
+
+###  Specify variables with missingness to be imputed
+imputedOnlyVars <- c("tooluse", "ease", "useful", "timespent", "hoursused_4",
+                     "gopro", "over", "strain")
+## Imputers that have missingness must be imputed.
+imputedVars <- intersect(unique(c(imputedOnlyVars, imputerVars)), missVars)
+imputedVars
+imputedMatrix <- predictorMatrix
+imputedMatrix[imputedVars,] <- 1
+imputedMatrix
+
+
+###  Construct a full predictor matrix (rows: imputed variables; cols: imputer variables)
+predictorMatrix <- imputerMatrix * imputedMatrix
+## Diagonals must be zeros (a variable cannot impute itself)
+diag(predictorMatrix) <- 0
+predictorMatrix
+
+
+###  Dry-run mice for imputation methods
+dryMice <- mice(data = longer_comp, m = 1, predictorMatrix = predictorMatrix, maxit = 0)
+## Update predictor matrix
+predictorMatrix <- dryMice$predictorMatrix
+
+###   Imputers (non-zero columns of predictorMatrix)
+imputerVars <- colnames(predictorMatrix)[colSums(predictorMatrix) > 0]
+imputerVars
+###   Imputed (non-zero rows of predictorMatrix)
+imputedVars <- rownames(predictorMatrix)[rowSums(predictorMatrix) > 0]
+imputedVars
+###   Imputers that are complete
+setdiff(imputerVars, imputedVars)
+###   Imputers with missingness
+intersect(imputerVars, imputedVars)
+###   Imputed-only variables without being imputers
+setdiff(imputedVars, imputerVars)
+###   Variables with missingness that are not imputed
+setdiff(missVars, imputedVars)
+###   Relevant part of predictorMatrix
+predictorMatrix[rowSums(predictorMatrix) > 0, colSums(predictorMatrix) > 0]
+
+dryMice$method[setdiff(allVars, imputedVars)] <- ""
+###   Methods used for imputation
+dryMice$method[sapply(dryMice$method, nchar) > 0]
+
+
+## Set seed for reproducibility
+set.seed(3561126)
+
+##  execution
+miceout <- mice(data = longer_comp, m = 1, print = TRUE, 
+                predictorMatrix = predictorMatrix, method = dryMice$method)
+
+
+###  Show mice results
+## mice object ifself
+miceout
+## Variables that no longer have missingness after imputation
+actuallyImputedVars <-
+    setdiff(names(longer_comp)[colSums(is.na(longer_comp)) > 0],
+            names(complete(miceout, action = 1))[colSums(is.na(complete(miceout, action = 1))) > 0])
+actuallyImputedVars
+
+## Examine discrepancies
+###   Variables that were unexpectedly imputed
+setdiff(actuallyImputedVars, imputedVars)
+###   Variables that were planned for MI but not imputed
+setdiff(imputedVars, actuallyImputedVars)
+
+## Still missing variables
+names(complete(miceout, action = 1))[colSums(is.na(complete(miceout, action = 1))) > 0]
+
+
 ```
 
 ```{r}
 #| eval: false
+longer_comp_imp <- longer_comp %>% select(id, b1age, b1extraversion, b1agreeableness, b1conscientiousness, b1neuroticism, b1openness, b1experience, b1wishtr, b1media, b1anx, tooluse, ease, useful, timespent, hoursused_4, hoursstudy_4, gopro, over, strain)
 
-# Output AI Tools
-df <- data.frame(AITool = unique(get_unique_values(mydata)))
+################
+## IMPUTATION ##
+################
 
-# Write the data frame to a CSV file 
-write.csv(df, "docs/AItools.csv", row.names = FALSE)
+longer_comp_imp$tooluse <- factor(longer_comp_imp$tooluse)
+library(micemd)
+require(lme4)
+
+pred <- mice(longer_comp_imp, print = FALSE, maxit = 0, seed = 1)$pred
+pred[c("tooluse", "ease", "useful", "timespent", "hoursused_4", "hoursstudy_4",
+        "gopro", "over", "strain"), "id"] <- -2
+
+meth <- mice(longer_comp_imp, print = FALSE, maxit = 0, seed = 1)$method
+meth[2:11] <- "pmm"
+meth["tooluse"] <- "2l.bin"
+meth[13:20] <- "2l.lmer"
+
+imp_tool <- mice(longer_comp_imp, method = meth, pred = pred, maxit = 20, m = 30, seed = 1)
+
+tooluse <- complete(imp_tool)
+
+##############################
+## IMPUTE LEVEL 1 VARIABLES ##
+##############################
+
+pred <- mice(longer_comp_imp, print = FALSE, maxit = 0, seed = 1)$pred
+pred[c("ease","useful","timespent", "hoursused_4", "gopro", "over", "strain"), "id"] <- -2
+
+pred[c("id", "tooluse", "b1age", "b1extraversion", "b1agreeableness", "b1conscientiousness",
+        "b1neuroticism", "b1openness", "b1experience", "b1wishtr", "b1media",
+        "b1anx"),] <- 0
+
+
+imp_l1 <- mice(longer_comp_imp, method = "2l.lmer", pred = pred, maxit = 20, m = 30, seed = 1)
+
+level1df <- complete(imp_l1) %>% select(ease, useful, timespent, hoursused_4, gopro, over, strain)
+
+
+##############################
+## IMPUTE LEVEL 2 VARIABLES ##
+##############################
+
+pred <- mice(longer_comp_imp, print = FALSE, maxit = 0, seed = 1)$pred
+pred[c("id", "tooluse", "ease", "useful", "timespent", "hoursused_4",
+       "hoursstudy_4", "gopro", "over", "strain" ),] <- 0
+
+imp_l2 <- mice(longer_comp_imp, pred = pred, maxit = 10, m = 10, seed = 1)
+
+level2df <- complete(imp_l2) %>% select(b1age, b1extraversion, b1agreeableness, b1conscientiousness, b1neuroticism, b1openness, b1experience, b1wishtr, b1media, b1anx)
+
+## Completing
+longer_comp_imp_complete <- cbind(longer_comp_imp$id, tooluse, level1df, level2df) %>% rename(id = "longer_comp_imp$id")
+
+# Adding count variable for tooluse
+longer_comp_imp_complete$tooluse <- as.numeric(as.character(longer_comp_imp_complete$tooluse))
+
+longer_comp_imp_complete <- longer_comp_imp_complete %>% group_by(id) %>% mutate(total_tooluse_imp = sum(tooluse, na.rm = TRUE))
+
+library(openxlsx)
+write.xlsx(longer_comp_imp_complete, 'data/imputed/longer_comp_imp_complete.xlsx')
+
+```
+
+```{r}
+library(openxlsx)
+longer_comp_imp_complete <- read.xlsx('data/imputed/longer_comp_imp_complete.xlsx')
+```
+
+### Multiple imputation checks
+
+```{r}
+#| include: true
+propplot(imp_tool)
+
+plot(imp_tool)
+densityplot(imp_tool)
+
+plot(imp_l2)
+densityplot(imp_l2)
+```
+
+```{r}
+plot(imp)
+
+
+pm["tooluse", c("id", "b1age", "b1extraversion", "b1agreeableness", "b1conscientiousness",
+                "b1neuroticism", "b1openness", "b1experience", "b1wishtr", "b1media",
+                "b1anx", "f1wishtr", "f2media", "f2anx", "tooluse", "ease", 
+                "useful", "timespent", "hoursused_4", "hoursstudy_4", 
+                "gopro", "over", "strain")] <- c(-2, 1, 1, 1, 1, 
+                                                 1, 1, 1, 1, 1,
+                                                 1, 1, 1, 1, 0, 2,
+                                                 2, 2, 2, 2, 
+                                                 2, 2, 2)
+pm
+
+res.mice.md <- mice(longer_comp_imp, m=5, predictorMatrix = pm,
+                    method=impmethod, maxit=10, printFlag = T, seed=1983)
+res.mice.md$loggedEvents
+
+
+
+df <- complete(res.mice.md, 2)
+
+densityplot(res.mice.md, ~tooluse)
+
+```
+
+```{r}
+ind.clust <- 1#index for the cluster variable
+#initialisation of the argument predictorMatrix
+predictor.matrix<-mice(longer_comp_imp,m=1,maxit=0)$pred
+predictor.matrix[ind.clust,ind.clust] <- 0
+predictor.matrix[-ind.clust,ind.clust]<- 1
+predictor.matrix[predictor.matrix==1] <- 1
+
+predictor.matrix["tooluse", "id"] <- -2
+predictor.matrix["ease", "id"] <- -2
+predictor.matrix["useful", "id"] <- -2
+predictor.matrix["timespent", "id"] <- -2
+predictor.matrix["hoursused_4", "id"] <- -2
+predictor.matrix["gopro", "id"] <- -2
+predictor.matrix["over", "id"] <- -2
+predictor.matrix["strain", "id"] <- -2
+
+#initialisation of the argument method
+method<-find.defaultMethod(longer_comp_imp,ind.clust)
+#multiple imputation by chained equations (parallel calculation) [time consumming]
+res.mice <- mice(longer_comp_imp, predictorMatrix = predictor.matrix, method=method)
+#check convergence
+plot(res.mice)
+#analysis (apply a generalized linear mixed effects model to each imputed dataset)
+#ana <- with(res.mice, expr=glmer(Score~Sex+GSCE+(1|School),
+# family="poisson",
+# control=glmerControl(optimizer = "bobyqa")))
+#check the number of generated tables
+#plot(ana)
+#pooling
+#res.pool <- pool(ana)
+#summary(res.pool)
+```
+
+```{r}
+## Scale selected predictors
+# longer_comp_scales <- scale_selected_predictors(longer_comp, c("b1anx", "strain", "useful", "ease", "over", "b1extraversion", "b1agreeableness", "b1conscientiousness", "b1neuroticism", "b1openness", "b1experience", "b1media", "b1wishtr", "gopro"))
+```
+
+## Create mean variables (for 8 days)
+
+```{r}
+longer_comp_imp_complete <- longer_comp_imp_complete %>% 
+  group_by(id) %>% 
+  mutate(mean_ease = mean(ease),
+         mean_useful = mean(useful),
+         mean_timespent = mean(timespent),
+         mean_hoursused_4 = mean(hoursused_4),
+         mean_gopro = mean(gopro),
+         mean_over = mean(over),
+         mean_strain = mean(strain)) %>% 
+  ungroup()
+```
+
+## Fit multilevel model 
+
+```{r}
+model_formula <- bf(total_tooluse_imp | trunc(ub = 8) ~ mean_useful + mean_ease + mean_over + mean_strain + b1media + b1anx + b1experience + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + b1age) 
+
+get_prior(model_formula, data=longer_comp_imp_complete)
+
+```
+
+### Outcome variable: Days used (8 days in total)
+
+About the cumulative ratio distribution: https://arxiv.org/pdf/2205.11942.pdf
+
+```{r}
+library(brms)
+# define formula
+model_formula <- bf(total_tooluse_imp_posint ~ mean_useful + mean_ease + mean_over + 
+                      mean_strain + b1anx +
+                      b1media + b1experience + b1extraversion + b1agreeableness + 
+                      b1conscientiousness + b1neuroticism + b1openness + b1age) 
+# define priors
+bprior <- c(prior_string("normal(0,0.45)", class = "b", coef="mean_useful"),
+            prior_string("normal(0,0.45)", class = "b", coef="mean_ease"),
+            prior_string("normal(0,0.45)", class = "b", coef="mean_over"),
+            prior_string("normal(0,0.45)", class = "b", coef="mean_strain"),
+            prior_string("normal(0,0.45)", class = "b", coef="b1anx"),
+            prior_string("normal(0,0.68)", class = "b", coef="b1media"),
+            prior_string("normal(0,0.68)", class = "b", coef="b1experience"),
+            prior_string("normal(0,0.68)", class = "b", coef="b1extraversion"),
+            prior_string("normal(0,0.68)", class = "b", coef="b1agreeableness"),
+            prior_string("normal(0,0.68)", class = "b", coef="b1conscientiousness"),
+            prior_string("normal(0,0.68)", class = "b", coef="b1neuroticism"),
+            prior_string("normal(0,0.68)", class = "b", coef="b1openness"),
+            prior_string("normal(0,0.06)", class = "b", coef="b1age"))
+
+
+fit_zinb1 <- brm(model_formula,
+                 data = longer_comp_imp_complete, 
+                 prior = bprior,
+                 silent = 0,
+                 #family = hurdle_poisson(),
+                 chains = 4,
+                 family = cratio(),
+                 control = list(adapt_delta = 0.90))
+
+```
+
+
+```{r}
+#| include: true
+summary(fit_zinb1)
+conditional_effects(fit_zinb1)
+#posterior_samples(fit_zinb1)
+```
+
+#### Posterior predictive checks 
+
+```{r}
+#| include: true
+mcmc_plot(fit_zinb1, variable = c('b_mean_useful', 'b_mean_ease', 'b_mean_over'), type = 'combo')
+
+# The first PPC we’ll look at is a comparison of the distribution of y and the distributions of some of the simulated datasets (rows) in the yrep matrix.
+pp_check(fit_zinb1, ndraws = 50)
+
+# In the plot, the dark line is the distribution of the observed outcomes y and each of the lighter lines is the kernel density estimate of one of the replications of y from the posterior predictive distribution (i.e., one of the rows in yrep). 
+
+pp_check(fit_zinb1, type = "error_hist", ndraws = 11)
+pp_check(fit_zinb1, type = "scatter_avg", ndraws = 100)
+pp_check(fit_zinb1, type = "stat_2d")
+pp_check(fit_zinb1, type = "rootogram")
+
+```
+
+### Outcome variable: Daily usage time 
+
+```{r}
+bform <- bf(hoursused_4 ~ useful + ease + over + strain + b1anx + b1media + b1experience + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + b1age + (1|id)) 
+
+get_prior(bform, data=longer_comp_imp_complete)
+
+fit_zinb2 <- brm(bform, data = longer_comp_imp_complete,
+                chains = 4,
+                control = list(adapt_delta = 0.90))
+```
+
+```{r}
+#| include: true
+summary(fit_zinb2)
+conditional_effects(fit_zinb2)
+```
+
+#### Posterior predictive checks 
+
+```{r}
+#| include: true
+mcmc_plot(fit_zinb2, variable = c('b_useful', 'b_ease', 'b_over'), type = 'combo')
+
+# The first PPC we’ll look at is a comparison of the distribution of y and the distributions of some of the simulated datasets (rows) in the yrep matrix.
+pp_check(fit_zinb2, ndraws = 50)
+
+# In the plot, the dark line is the distribution of the observed outcomes y and each of the lighter lines is the kernel density estimate of one of the replications of y from the posterior predictive distribution (i.e., one of the rows in yrep). 
+
+pp_check(fit_zinb2, type = "error_hist", ndraws = 11)
+pp_check(fit_zinb2, type = "scatter_avg", ndraws = 100)
+pp_check(fit_zinb2, type = "stat_2d")
+pp_check(fit_zinb2, type = "rootogram")
+
+```
+
+### Outcome variable: Daily strain
+
+```{r}
+bform <- bf(strain ~ useful + ease + over + b1anx + b1media + b1experience + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + b1age + (1|id)) 
+
+get_prior(bform, data=longer_comp_imp_complete)
+
+fit_zinb3 <- brm(bform, data = longer_comp_imp_complete,
+                chains = 4,
+                control = list(adapt_delta = 0.90))
+```
+
+```{r}
+#| include: true
+summary(fit_zinb3)
+conditional_effects(fit_zinb3)
+```
+
+#### Posterior predictive checks 
+
+```{r}
+#| include: true
+mcmc_plot(fit_zinb2, variable = c('b_useful', 'b_ease', 'b_over'), type = 'combo')
+
+# The first PPC we’ll look at is a comparison of the distribution of y and the distributions of some of the simulated datasets (rows) in the yrep matrix.
+pp_check(fit_zinb2, ndraws = 50)
+
+# In the plot, the dark line is the distribution of the observed outcomes y and each of the lighter lines is the kernel density estimate of one of the replications of y from the posterior predictive distribution (i.e., one of the rows in yrep). 
+
+pp_check(fit_zinb2, type = "error_hist", ndraws = 11)
+pp_check(fit_zinb2, type = "scatter_avg", ndraws = 100)
+pp_check(fit_zinb2, type = "stat_2d")
+pp_check(fit_zinb2, type = "rootogram")
+
 ```
 
 
 
 
-# Abstract
+# Experimentation
 
-# Introduction
+## Plotting some growth curve
 
-# Methods
+```{r}
+#| eval: false
+b1 = 0.9 # max value
+b2 = 0.9 # shape 
+b3 = 0.9 # curvature
 
-# Results
+
+curve(   b1 * (1 - exp(-(x / b2) ^ b3)), from=1, to=10, n=300, xlab="xvalue", ylab="yvalue", col="blue", lwd=2)
+```
+
+## Plotting non linear mixed effects model
+
+```{r}
+#| eval: false
+# Load required library
+library(nlme)
+
+
+# Fit the non-linear mixed-effects model
+
+#ease ~ b_1i * (1 - exp(-(b1age / b_2i) ^ b_3i)),
+
+#b_1i+b_2i*((age-18)/12)+b_3i*((age-18)/12)^2,
+
+# model <- nlme::nlme(ease ~ b_1i * (1 - exp(-(b1age / b_2i) ^ b_3i)),
+#                     fixed=b_1i+b_2i+b_3i~1,
+#                     random=b_1i+b_2i+b_3i~1,
+#                     data = longer_comp)
+   
+longer_comp_plot  <- longer_comp %>% select(useful, ease, id) %>% drop_na(.)
+
+           
+hght.quad.nlme <- nlme(ease~b_1i+b_2i*((useful-18)/12)+b_3i*((useful-18)/12)^2,
+                      data=longer_comp_plot,
+                      fixed=b_1i+b_2i+b_3i~1,
+                      groups=~id,
+                      start=c(30, 10, -3),
+                      na.action = na.omit)
+
+
+dat <- getData(hght.quad.nlme)
+
+
+# Predict values using the model
+dat$predicted <- predict(hght.quad.nlme, level = 0)
+# This is used but might have to be adjusted according to your specific case.
+
+#Plot the data
+plot(ease ~ useful, data = dat, xlab = "useful", ylab = "ease")
+lines(dat$ease, dat$predicted, col="red")
+```
+
+
+```{r}
+#| eval: false
+theta = seq(0, 1, 0.0001)
+prior = theta ^ 864 * (1 - theta) ^ 227
+prior = prior / sum(prior)
+```
+
+
+```{r}
+#| eval: false
+
+ini <- mice(longer_comp, maxit = 0)
+method <- ini$meth
+method <- gsub("pmm", "norm", meth)
+
+pred <- ini$pred
+
+pred[, "id"] <- 0
+pred[, "set"] <- 0
+
+imp1 <- mice(longer_comp, meth = method, pred = pred, print = FALSE)
+
+ini <- mice(longer_comp, maxit = 0)
+pred <- ini$pred
+pred[, "set"] <- 0
+imp2 <- mice(longer_comp, meth = method, pred = pred, print = FALSE)
+
+plot(imp2, c("ease", "tooluse", "useful"))
+
+imp3b <- mice.mids(imp2, maxit = 20, print = FALSE)
+plot(imp3b, c("ease", "tooluse", "useful"))
+
+densityplot(imp3b)
+
+
+model_formula <- tooluse ~ cwc(ease, id) + gm(useful, id) + ( 1  | id)
+mcmc_iter <- 4
+dep <- list("model"="logistic", "formula"=model_formula, R_args=list(iter=mcmc_iter) )
+ind_x <- list("model"="mlreg", "formula"= ease ~ useful + (1|id), R_args=list(iter=mcmc_iter), sampling_level="id" )
+ind <- list("X"=ind_x)
+
+mod1 <- mdmb::frm_fb(longer_comp, dep, ind, aggregation=TRUE)
+
+frm_fb(dat, dep, ind, weights=NULL, verbose=TRUE, data_init=NULL, iter=500,
+burnin=100, Nimp=10, Nsave=3000, refresh=25, acc_bounds=c(.45,.50),
+print_iter=10, use_gibbs=TRUE, aggregation=TRUE)
+```
+
+
+```{r}
+#| eval: false
+NonNACount <- function(x) {
+  return(sum(!is.na(x)))
+}
+
+comp_df <- comp_df  %>% rowwise() %>% 
+  mutate(tooluse_total = (t2tooluse + t3tooluse + t4tooluse + t5tooluse + t6tooluse) / 
+           NonNACount(c(t2tooluse, t3tooluse, t4tooluse, t5tooluse, t6tooluse))) 
+
+for (col in names(comp_df)[which(names(comp_df) == 't1age'):which(names(comp_df) == 't1media')]){
+    names(comp_df)[names(comp_df) == col] <-  sub("t", "b", col)
+}
+
+names(comp_df)[names(comp_df) == "t1anx"] <-  sub("t", "b", "t1anx")
+
+names(comp_df)[names(comp_df) == "tooluse_total"] <-  sub("tool", "b1tool", "tooluse_total")
+
+for (col in names(comp_df)[which(names(comp_df) == 't7trainingreceived'):which(names(comp_df) == 't7media')]){
+    names(comp_df)[names(comp_df) == col] <-  sub("t7", "f1", col)
+}
+
+names(comp_df)[names(comp_df) == "t7anx"] <-  sub("t7", "f1", "t7anx")
+
+
+for (col in names(comp_df)[which(names(comp_df) == 't8trainingreceived'):which(names(comp_df) == 't8media')]){
+    names(comp_df)[names(comp_df) == col] <-  sub("t8", "f2", col)
+}
+
+names(comp_df)[names(comp_df) == "t8anx"] <-  sub("t8", "f2", "t8anx")
+
+
+comp_df$t2toolusenextday <- lead(comp_df$t2tooluse)
+comp_df$t3toolusenextday <- lead(comp_df$t3tooluse)
+comp_df$t4toolusenextday <- lead(comp_df$t4tooluse)
+comp_df$t5toolusenextday <- lead(comp_df$t5tooluse)
+comp_df$t6toolusenextday <- lead(comp_df$t6tooluse)
+
+longer_comp <- comp_df %>% 
+ pivot_longer(matches("t1|t2|t3|t4|t5|t6|t7|t8"),
+    names_pattern = "(t.)(.*)", 
+   names_to = c( "set", ".value")
+ ) %>% mutate(set = (as.numeric(textclean::mgsub(.$set, c("t", "_"), c("", "")))))
+
+longer_comp$id <- rep(seq(1,292), each=8)
+
+```
+
+```{r}
+#| eval: false
+# Replace with mean/ mode for missing values if more than 3 days available for daily diaries
+# Mode
+column_names <- c("t2tooluse", "t3tooluse", "t4tooluse", "t5tooluse", "t6tooluse")
+new_data <- data.frame(t(apply(comp_df[column_names], 1, replace_na_with_mode, column_names = column_names)))
+colnames(new_data) <- column_names
+comp_df[ , column_names] <- new_data # Merge the new_data dataframe with the original data dataframe
+ 
+# Mean
+ease <- comp_df %>% select(matches("t[2-6]ease")) %>% names(.)
+gopro <- comp_df %>% select(matches("t[2-6]gopro")) %>% names(.)
+over <- comp_df %>% select(matches("t[2-6]over")) %>% names(.)
+strain <- comp_df %>% select(matches("t[2-6]strain")) %>% names(.)
+useful <- comp_df %>% select(matches("t[2-6]useful")) %>% names(.)
+timespent <- comp_df %>% select(matches("t[2-6]timespent")) %>% names(.)
+hoursused <- comp_df %>% select(matches("t[2-6]hoursused_")) %>% names(.)
+hoursstudy <- comp_df %>% select(matches("t[2-6]hoursstudy_")) %>% names(.)
+timespent <- comp_df %>% select(matches("t[2-6]timespent")) %>% names(.)
+
+comp_df <- comp_df %>% 
+  mean_replace(., ease) %>% 
+  mean_replace(., gopro) %>%
+  mean_replace(., over) %>%
+  mean_replace(., strain) %>%
+  mean_replace(., useful) %>%
+  mean_replace(., timespent) %>%
+  mean_replace(., hoursused) %>%
+  mean_replace(., hoursstudy) %>%
+  mean_replace(., timespent)
+  
+```
+
+```{r}
+#| eval: false
+multiModel <- brms::brm(data = longer_comp, toolusenextday ~ useful + b1media +  (useful|id))
+summary(multiModel)
+
+```
+
+
+```{r}
+#| eval: false
+library(lme4)
+
+# H1a: Daily perceived usefulness of NLP chatbots is positively related to daily NLP chatbot usage (yes or no) 
+# Fit mixed-effects model
+model <- glmer(toolusenextday  ~  useful + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp, family = "binomial")
+
+# Display the result
+summary(model)
+
+
+# H1b: Daily perceived usefulness of NLP chatbots is positively related to daily NLP chatbot usage time in minutes.
+# Fit mixed-effects model
+library(lmerTest)
+model <- lmer(timespent ~ useful + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+```
+
+```{r}
+#| eval: false
+# H2a: Daily perceived ease of use of NLP chatbots is positively related to daily NLP chatbot usage (yes or no).
+model <- glmer(toolusenextday ~ ease + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp, family = "binomial")
+
+# Display the result
+summary(model)
+
+
+# H2b: Daily perceived ease of use of NLP chatbots is positively related to daily NLP chatbot usage time in minutes.
+# Fit mixed-effects model
+library(lmerTest)
+model <- lmer(timespent ~ ease + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+```
+
+```{r}
+#| eval: false
+# H3a: NLP chatbot anxiety is negatively related to daily NLP chatbot usage (yes or no)
+model <- glmer(toolusenextday ~ b1anx + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp, family = "binomial")
+
+# Display the result
+summary(model)
+
+
+# H3b: NLP chatbot anxiety is negatively related to daily NLP chatbot usage time in minutes, and c) positively related to daily NLP chatbot strain.
+
+# Fit mixed-effects model
+library(lmerTest)
+model <- lmer(timespent ~ b1anx + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+
+# H3b: NLP chatbot anxiety is positively related to daily NLP chatbot strain.
+model <- lmer(strain ~ b1anx + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+```
+
+```{r}
+#| eval: false
+# H4a: Daily information overload is negatively related to daily NLP chatbot usage (yes or no)
+model <- glmer(tooluse ~ over + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp, family = "binomial")
+
+# Display the result
+summary(model)
+
+# H4b: Daily information overload is negatively related to daily NLP chatbot usage time in minutes
+model <- lmer(timespent ~ over + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+
+# H4c: Daily information overload is positively related to daily NLP chatbot strain.
+model <- lmer(strain ~ over + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+```
+
+```{r}
+#| eval: false
+# As part of exploratory analyses, we will investigate the role of familiarity with NLP chatbots and training experience on perceived usefulness and ease of use, the role of NLP usage on study goal achievement, and the role of openness to experience as a moderator of the relationship of usefulness and ease of use with daily usage. 
+
+# E1: The role of familiarity with NLP chatbots and training experience on perceived usefulness
+model <- lmer(useful ~ b1experience + b1receivetr + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+
+# E2: The role of familiarity with NLP chatbots and training experience on perceived ease of use
+model <- lmer(ease ~ b1experience + b1receivetr + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+
+# E3: The role of NLP usage on study goal achievement
+model <- lmer(gopro ~ tooluse + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp)
+
+# Display the result
+summary(model)
+
+# E4: Openness to experience as a moderator of the relationship of usefulness with daily usage. 
+model <- glmer(tooluse ~ useful*b1openness + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp, family = "binomial")
+
+# Display the result
+summary(model)
+
+# E5: Openness to experience as a moderator of the relationship of ease of use with daily usage. 
+model <- glmer(tooluse ~ ease*b1openness + b1media + b1age + b1extraversion + b1agreeableness + b1conscientiousness + b1neuroticism + b1openness + (1 | id), data = longer_comp, family = "binomial")
+
+# Display the result
+summary(model)
+```
+
+```{r}
+#| eval: false
+fit.totaleffect <- lmer(ease ~ b1experience +(1| id), data = longer_comp)
+fit.mediator    <- lmer(useful ~ b1experience +(1| id), data = longer_comp)
+fit.dv          <- lmer(ease ~ useful + b1experience +(1| id), data = longer_comp)
+
+results <- mediation::mediate(fit.mediator, fit.dv, treat='b1experience', mediator='useful')
+
+```
+
+
+
+
+
 
 
 # References
